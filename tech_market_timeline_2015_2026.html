@@ -1,0 +1,361 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans, sans-serif); }
+
+.container { padding: 1.5rem 1rem 2rem; max-width: 100%; }
+
+.phase-header {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.phase-box {
+  border-radius: var(--border-radius-md, 8px);
+  padding: 10px 12px;
+  cursor: pointer;
+  border: 0.5px solid transparent;
+  transition: opacity 0.2s;
+}
+.phase-box:hover { opacity: 0.85; }
+.phase-box.p1 { background: #E6F1FB; border-color: #185FA5; }
+.phase-box.p2 { background: #E1F5EE; border-color: #0F6E56; }
+.phase-box.p3 { background: #FAEEDA; border-color: #854F0B; }
+.phase-box.p4 { background: #EEEDFE; border-color: #534AB7; }
+@media (prefers-color-scheme: dark) {
+  .phase-box.p1 { background: #0C447C; border-color: #85B7EB; }
+  .phase-box.p2 { background: #085041; border-color: #5DCAA5; }
+  .phase-box.p3 { background: #633806; border-color: #EF9F27; }
+  .phase-box.p4 { background: #3C3489; border-color: #AFA9EC; }
+}
+.phase-num { font-size: 11px; font-weight: 500; opacity: 0.7; margin-bottom: 2px; }
+.phase-name { font-size: 12px; font-weight: 500; line-height: 1.3; }
+.phase-year { font-size: 11px; opacity: 0.65; margin-top: 2px; }
+
+.phase-box.p1 .phase-num, .phase-box.p1 .phase-name, .phase-box.p1 .phase-year { color: #0C447C; }
+.phase-box.p2 .phase-num, .phase-box.p2 .phase-name, .phase-box.p2 .phase-year { color: #085041; }
+.phase-box.p3 .phase-num, .phase-box.p3 .phase-name, .phase-box.p3 .phase-year { color: #633806; }
+.phase-box.p4 .phase-num, .phase-box.p4 .phase-name, .phase-box.p4 .phase-year { color: #3C3489; }
+@media (prefers-color-scheme: dark) {
+  .phase-box.p1 .phase-num, .phase-box.p1 .phase-name, .phase-box.p1 .phase-year { color: #B5D4F4; }
+  .phase-box.p2 .phase-num, .phase-box.p2 .phase-name, .phase-box.p2 .phase-year { color: #9FE1CB; }
+  .phase-box.p3 .phase-num, .phase-box.p3 .phase-name, .phase-box.p3 .phase-year { color: #FAC775; }
+  .phase-box.p4 .phase-num, .phase-box.p4 .phase-name, .phase-box.p4 .phase-year { color: #CECBF6; }
+}
+
+.timeline { position: relative; }
+
+.year-row {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 12px;
+  margin-bottom: 6px;
+  align-items: start;
+}
+
+.year-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  padding-top: 6px;
+  text-align: right;
+}
+
+.techs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 4px 0;
+}
+
+.tag {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  cursor: pointer;
+  border: 0.5px solid transparent;
+  transition: transform 0.15s, opacity 0.15s;
+  font-weight: 400;
+}
+.tag:hover { transform: scale(1.04); }
+
+.tag.p1 { background: #E6F1FB; color: #0C447C; border-color: #B5D4F4; }
+.tag.p2 { background: #E1F5EE; color: #085041; border-color: #9FE1CB; }
+.tag.p3 { background: #FAEEDA; color: #633806; border-color: #FAC775; }
+.tag.p4 { background: #EEEDFE; color: #3C3489; border-color: #CECBF6; }
+.tag.bubble { text-decoration: line-through; opacity: 0.6; }
+.tag.current { font-weight: 500; }
+
+@media (prefers-color-scheme: dark) {
+  .tag.p1 { background: #0C447C; color: #B5D4F4; border-color: #185FA5; }
+  .tag.p2 { background: #085041; color: #9FE1CB; border-color: #0F6E56; }
+  .tag.p3 { background: #633806; color: #FAC775; border-color: #854F0B; }
+  .tag.p4 { background: #3C3489; color: #CECBF6; border-color: #534AB7; }
+}
+
+.divider {
+  height: 0.5px;
+  background: var(--color-border-tertiary);
+  margin: 8px 0 10px 60px;
+}
+
+.detail-panel {
+  background: var(--color-background-secondary);
+  border: 0.5px solid var(--color-border-secondary);
+  border-radius: var(--border-radius-lg, 12px);
+  padding: 16px;
+  margin-top: 16px;
+  display: none;
+}
+.detail-panel.active { display: block; }
+
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+.detail-title { font-size: 15px; font-weight: 500; color: var(--color-text-primary); }
+.detail-meta { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+.verdict-badge {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.verdict-bubble { background: #FCEBEB; color: #A32D2D; }
+.verdict-real { background: #EAF3DE; color: #27500A; }
+.verdict-ongoing { background: #FAEEDA; color: #633806; }
+.verdict-mixed { background: #F1EFE8; color: #444441; }
+@media (prefers-color-scheme: dark) {
+  .verdict-bubble { background: #501313; color: #F09595; }
+  .verdict-real { background: #173404; color: #C0DD97; }
+  .verdict-ongoing { background: #412402; color: #FAC775; }
+  .verdict-mixed { background: #2C2C2A; color: #B4B2A9; }
+}
+
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+.detail-item label { font-size: 11px; font-weight: 500; color: var(--color-text-secondary); display: block; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.04em; }
+.detail-item p { font-size: 13px; color: var(--color-text-primary); line-height: 1.5; }
+.stocks { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.stock-tag { font-size: 11px; padding: 2px 7px; border-radius: 4px; background: var(--color-background-primary); border: 0.5px solid var(--color-border-secondary); color: var(--color-text-secondary); font-family: var(--font-mono, monospace); }
+
+.ask-btn {
+  margin-top: 12px;
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: var(--border-radius-md);
+  background: transparent;
+  border: 0.5px solid var(--color-border-secondary);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+.ask-btn:hover { background: var(--color-background-secondary); }
+
+.legend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  align-items: center;
+}
+.legend-item { display: flex; align-items: center; gap: 5px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+</style>
+
+<div class="container">
+<h2 class="sr-only">2015~2026 시장 주목 기술 타임라인 — 기술 생애주기 4단계 프레임</h2>
+
+<div class="phase-header">
+  <div class="phase-box p1" onclick="filterPhase(1)">
+    <div class="phase-num">1단계</div>
+    <div class="phase-name">연결과 데이터 수집</div>
+    <div class="phase-year">2015–2017</div>
+  </div>
+  <div class="phase-box p2" onclick="filterPhase(2)">
+    <div class="phase-num">2단계</div>
+    <div class="phase-name">자동화와 지능화의 꿈</div>
+    <div class="phase-year">2018–2020</div>
+  </div>
+  <div class="phase-box p3" onclick="filterPhase(3)">
+    <div class="phase-num">3단계</div>
+    <div class="phase-name">가상과 현실의 혼돈</div>
+    <div class="phase-year">2021–2023</div>
+  </div>
+  <div class="phase-box p4" onclick="filterPhase(4)">
+    <div class="phase-num">4단계</div>
+    <div class="phase-name">실질적 생산성 혁명</div>
+    <div class="phase-year">2024–2026</div>
+  </div>
+</div>
+
+<div class="legend">
+  <span style="font-weight:500; color: var(--color-text-primary);">범례</span>
+  <span class="legend-item"><span class="legend-dot" style="background:#185FA5"></span>1단계</span>
+  <span class="legend-item"><span class="legend-dot" style="background:#0F6E56"></span>2단계</span>
+  <span class="legend-item"><span class="legend-dot" style="background:#854F0B"></span>3단계</span>
+  <span class="legend-item"><span class="legend-dot" style="background:#534AB7"></span>4단계</span>
+  <span class="legend-item" style="text-decoration:line-through; opacity:0.6;">취소선 = 버블 판정</span>
+  <span style="font-size:11px; color: var(--color-text-secondary)">태그 클릭 시 상세 보기</span>
+</div>
+
+<div class="timeline" id="timeline"></div>
+<div class="detail-panel" id="detail"></div>
+</div>
+
+<script>
+const data = [
+  { year: 2015, phase: 1, techs: [
+    { name: "IoT·스마트홈", verdict:"mixed", desc:"사물인터넷의 대중화 원년. 아마존 에코, 구글 네스트 등 스마트홈 기기가 폭발적으로 출시됨.", expect:"모든 사물이 연결되면 새로운 서비스가 탄생할 것", impact:"하드웨어 제조사·통신사 대규모 투자. 삼성·LG 등 가전업체 스마트홈 사업부 신설", stocks:["AMZN","GOOGL","005930.KS"], verdict_label:"혼재", invest:"수십억 달러 VC 유입" },
+    { name: "핀테크", verdict:"real", desc:"모바일 결제·P2P 대출·인터넷 전문은행 등 금융 혁신 1세대. 알리페이, 카카오페이 등이 본격 성장.", expect:"은행 없이도 모든 금융이 가능해질 것", impact:"전통 은행의 디지털 전환 가속, 규제 샌드박스 도입", stocks:["SQ","PYPL","035720.KS"], verdict_label:"실체 확인", invest:"글로벌 핀테크 투자 190억 달러" },
+    { name: "드론 산업", verdict:"mixed", desc:"DJI 중심으로 소비자용·상업용 드론 시장이 급성장. 아마존 드론 배송 발표로 시장 주목.", expect:"택배·농업·촬영 등 전 산업 대체 가능", impact:"항공 규제 정비 착수, 드론 촬영 서비스 산업화", stocks:["AMZN","BA"], verdict_label:"혼재", invest:"2015년 드론 시장 50억 달러" },
+  ]},
+  { year: 2016, phase: 1, techs: [
+    { name: "VR 헤드셋", verdict:"bubble", desc:"오큘러스 리프트·HTC 바이브 출시. VR 콘텐츠 생태계 형성 기대로 수천억 투자 유입.", expect:"게임·영화·교육이 VR로 완전히 이동할 것", impact:"콘텐츠 투자 급증했으나 보급률 저조로 침체", stocks:["META","SNE"], verdict_label:"버블", invest:"VR/AR 투자 20억 달러(2016)" },
+    { name: "빅데이터·하둡", verdict:"real", desc:"기업 데이터 분석 인프라 구축 붐. 클라우드 스토리지와 결합해 데이터 레이크 개념 정착.", expect:"데이터가 21세기의 석유가 될 것", impact:"데이터 엔지니어링 직군 탄생, 클라우드 전환 가속", stocks:["AMZN","MSFT","GOOGL"], verdict_label:"실체 확인", invest:"빅데이터 시장 130억 달러" },
+    { name: "자율주행 초기", verdict:"ongoing", desc:"테슬라 오토파일럿 상용화, 구글 웨이모 스핀오프. 자율주행 상용화가 5년 내 가능하다는 기대 폭발.", expect:"2020년이면 완전 자율주행 상용화", impact:"자동차·IT·반도체 업계 대규모 M&A와 투자", stocks:["TSLA","GOOGL","GM"], verdict_label:"진행중", invest:"2016년 자율주행 투자 40억 달러" },
+  ]},
+  { year: 2017, phase: 1, techs: [
+    { name: "블록체인·암호화폐", verdict:"bubble", desc:"비트코인이 2만 달러를 돌파하며 ICO(초기코인공개) 열풍. 블록체인은 모든 산업을 혁신할 것이라는 기대.", expect:"중앙화된 신뢰 기관 없이 거래 가능한 세상", impact:"수천 개의 암호화폐 탄생, 대규모 사기·규제 논란", stocks:["COIN","MARA","RIOT"], verdict_label:"버블(블록체인 기반기술은 생존)", invest:"ICO 시장 56억 달러" },
+    { name: "AI 스피커", verdict:"real", desc:"아마존 에코·구글 홈이 대중화. 자연어 처리 기반 음성 인터페이스 경쟁 격화.", expect:"집 안의 모든 것을 음성으로 제어하는 시대", impact:"음성 검색 시장 급성장, 스마트홈 허브 역할 정착", stocks:["AMZN","GOOGL","AAPL"], verdict_label:"실체 확인", invest:"AI 스피커 시장 10억 달러" },
+  ]},
+  { year: 2018, phase: 2, techs: [
+    { name: "클라우드 AI 서비스", verdict:"real", desc:"AWS, Azure, GCP가 AI API를 상용화. 중소기업도 머신러닝 도입이 가능해지는 민주화 시대.", expect:"AI가 모든 소프트웨어에 내장될 것", impact:"SaaS 기업들의 AI 기능 탑재 경쟁, 데이터 과학자 몸값 폭등", stocks:["AMZN","MSFT","GOOGL"], verdict_label:"실체 확인", invest:"클라우드 AI 시장 77억 달러" },
+    { name: "자율주행 레벨3", verdict:"ongoing", desc:"웨이모 원 상업 서비스 시작. 현대·GM 등 완성차 업체들 전동화+자율주행 로드맵 발표.", expect:"레벨4 자율주행이 2022년 실현될 것", impact:"라이다·센서 기업 급성장, 자율주행 SW 스타트업 투자 급증", stocks:["TSLA","MBLY","GM"], verdict_label:"진행중", invest:"자율주행 투자 누적 800억 달러" },
+    { name: "로봇 물류", verdict:"real", desc:"아마존 키바 로봇 전격 도입으로 물류 자동화 붐. 쿠팡·CJ대한통운 등도 로봇 창고 도입 시작.", expect:"물류 센터 완전 자동화로 인력 대체", impact:"물류 효율 300% 이상 개선 사례 속출, 로봇 기업 M&A 급증", stocks:["AMZN","6954.T"], verdict_label:"실체 확인", invest:"창고 자동화 시장 140억 달러" },
+  ]},
+  { year: 2019, phase: 2, techs: [
+    { name: "5G 인프라", verdict:"real", desc:"세계 최초 5G 상용화(한국). 삼성·에릭슨·화웨이 장비 수주 경쟁. 초저지연 통신의 시대 개막.", expect:"모든 산업이 5G로 재편될 것", impact:"통신 인프라 투자 급증, 스마트팩토리·자율주행 연계 기대", stocks:["005930.KS","ERIC","NOK"], verdict_label:"실체 확인(기대보다 느린 산업 적용)", invest:"5G 인프라 투자 2천억 달러(2019~2025)" },
+    { name: "구독 경제", verdict:"real", desc:"넷플릭스 모델이 소프트웨어·미디어·커머스 전반으로 확산. SaaS 기업 밸류에이션 급등.", expect:"모든 소비가 구독으로 전환될 것", impact:"전통 유통·미디어의 해체, SaaS ARR이 핵심 지표로 부상", stocks:["NFLX","SPOT","CRM"], verdict_label:"실체 확인", invest:"SaaS 시장 1천500억 달러" },
+  ]},
+  { year: 2020, phase: 2, techs: [
+    { name: "원격근무 인프라", verdict:"real", desc:"팬데믹으로 화상회의·협업툴 수요 폭발. 줌·슬랙·노션이 단숨에 글로벌 기업이 됨.", expect:"오피스 없는 일의 미래가 표준이 될 것", impact:"부동산 시장 재편, 디지털 노마드 급증, 사무용 소프트웨어 밸류에이션 폭등", stocks:["ZM","WORK","MSFT"], verdict_label:"실체 확인(부분 조정)", invest:"화상회의 시장 142억 달러" },
+    { name: "바이오·mRNA", verdict:"real", desc:"화이자·모더나의 mRNA 백신 성공. 바이오테크 투자 사상 최대치 경신.", expect:"mRNA 기술로 암·에이즈 등 모든 질병 정복 가능", impact:"바이오테크 IPO 붐, 개인 맞춤형 의학 연구 가속", stocks:["MRNA","PFE","BNTX"], verdict_label:"실체 확인", invest:"바이오테크 투자 800억 달러" },
+  ]},
+  { year: 2021, phase: 3, techs: [
+    { name: "메타버스", verdict:"bubble", desc:"페이스북이 사명을 '메타'로 변경. 제페토·로블록스·디센트럴랜드 등 메타버스 플랫폼 투자 폭발.", expect:"현실 경제가 가상세계로 완전 이동할 것", impact:"메타 주가 급등 후 급락, XR 기기 보급 실패로 수백조 손실", stocks:["META","RBLX","U"], verdict_label:"버블(공간컴퓨팅 기반은 생존)", invest:"메타버스 투자 1천400억 달러" },
+    { name: "NFT", verdict:"bubble", desc:"디지털 아트·게임 아이템의 소유권 증명 수단으로 NFT가 폭발. 크립토펑크 등 수십억 달러 거래.", expect:"모든 디지털 자산이 NFT로 거래될 것", impact:"대부분 가치 폭락, 소수 블루칩만 생존, 디지털 소유권 개념은 정착", stocks:["COIN","MARA"], verdict_label:"버블", invest:"NFT 시장 최고 250억 달러(2021)" },
+    { name: "전기차 대중화", verdict:"real", desc:"테슬라 시총 1조 달러 돌파. 현대 아이오닉5·GM EV 출시 경쟁. 각국 내연기관 금지 로드맵 발표.", expect:"2030년 전체 신차의 50%가 EV", impact:"배터리·충전 인프라 투자 급증, 완성차 업계 전면 구조조정", stocks:["TSLA","GM","005380.KS"], verdict_label:"실체 확인", invest:"EV 투자 2천700억 달러(2021)" },
+  ]},
+  { year: 2022, phase: 3, techs: [
+    { name: "챗GPT 이전 AI", verdict:"real", desc:"스테이블디퓨전·미드저니 등 이미지 생성AI 등장. AI가 창작의 영역에 진입하는 것을 시장이 목격.", expect:"AI가 인간 창작자를 대체할 것", impact:"크리에이티브 산업 혼란, 저작권 논쟁 격화, AI 스타트업 투자 급증", stocks:["NVDA","MSFT"], verdict_label:"실체 확인", invest:"생성AI 투자 18억 달러(2022)" },
+    { name: "반도체 공급망", verdict:"real", desc:"미-중 반도체 전쟁 심화, TSMC·삼성 파운드리 패권 경쟁. 칩4 동맹 구성.", expect:"반도체가 지정학의 핵심 무기가 될 것", impact:"미국·유럽 자국 생산 투자 확대, 공급망 재편 가속", stocks:["NVDA","TSM","INTC","005930.KS"], verdict_label:"실체 확인", invest:"반도체 공장 투자 수천억 달러" },
+  ]},
+  { year: 2023, phase: 3, techs: [
+    { name: "생성형AI·LLM", verdict:"ongoing", desc:"챗GPT 1억 명 돌파, GPT-4·클로드·제미나이 경쟁. AI가 지식 노동 전반에 진입하며 시장을 뒤흔듦.", expect:"모든 지식 노동이 AI로 자동화될 것", impact:"NVDA 시총 1조 달러, 마이크로소프트 부활, 오픈AI 기업가치 90조 원", stocks:["NVDA","MSFT","GOOGL","AAPL"], verdict_label:"진행중", invest:"생성AI 투자 210억 달러(2023)" },
+    { name: "초전도체 논란", verdict:"bubble", desc:"한국 연구팀의 LK-99 상온 초전도체 논문. 에너지·반도체 혁명 기대로 관련주 폭등 후 논문 철회.", expect:"에너지 전달 손실 0%, 컴퓨팅 혁명 가능", impact:"실증 실패로 급락, 초전도체 연구 자체는 지속", stocks:["SCON","AMSC"], verdict_label:"버블", invest:"단기 투기성 자금 유입 후 소멸" },
+  ]},
+  { year: 2024, phase: 4, techs: [
+    { name: "AI 에이전트", verdict:"ongoing", desc:"단순 챗봇을 넘어 복잡한 업무를 자율 수행하는 AI 에이전트 경쟁. 오토GPT·클로드 컴퓨터유즈 등.", expect:"AI가 인간 없이 업무 워크플로우 전체를 완수할 것", impact:"RPA·BPO 산업 구조조정, 기업 SW 지출 패턴 변화 시작", stocks:["NVDA","MSFT","GOOGL"], verdict_label:"진행중", invest:"AI 에이전트 투자 급증(2024~)" },
+    { name: "양자컴퓨팅", verdict:"ongoing", desc:"구글 윌로우 칩이 양자 우위 달성. IBM·IonQ 등 양자 클라우드 서비스 확장.", expect:"암호화폐·신약·물류 최적화 분야 혁명", impact:"방산·금융·제약의 선제적 투자 시작, 양자내성암호 표준화 추진", stocks:["IONQ","RGTI","IBM","GOOGL"], verdict_label:"진행중", invest:"양자컴퓨팅 투자 28억 달러(2024)" },
+    { name: "인간형 로봇", verdict:"ongoing", desc:"테슬라 옵티머스·피규어AI·보스턴다이내믹스 상업화 경쟁. 공장·가정용 로봇 시대 개막 선언.", expect:"1,000만 원대 가사·노동 로봇이 보급될 것", impact:"현대차 보스턴다이내믹스 투자 확대, 제조업 구조 변화 논의", stocks:["TSLA","006400.KS","000270.KS"], verdict_label:"진행중", invest:"인간형 로봇 투자 10억 달러(2024)" },
+  ]},
+  { year: 2025, phase: 4, techs: [
+    { name: "AI 추론모델", verdict:"ongoing", desc:"오픈AI o1, 딥시크R1 등 '생각하는 AI'의 등장. 중국 딥시크 쇼크로 AI 패권 지형 재편.", expect:"AI가 박사급 전문가 수준의 추론 가능", impact:"딥시크 쇼크로 NVDA 시총 6천억 달러 하루 손실, AI 효율화 논쟁", stocks:["NVDA","MSFT","GOOGL"], verdict_label:"진행중", invest:"AI 인프라 투자 3천억 달러(2025~)" },
+    { name: "AI 인프라·전력", verdict:"ongoing", desc:"데이터센터 전력 수요 폭발로 원자력·가스 발전 기업 주가 급등. 쿠팡·SK하이닉스 HBM 수혜.", expect:"AI 인프라가 21세기 최대 설비투자 사이클", impact:"전력·냉각·반도체 공급망 전체 재편, 전기요금 이슈 급부상", stocks:["VST","CEG","012450.KS"], verdict_label:"진행중", invest:"데이터센터 투자 4천억 달러(2025)" },
+    { name: "자율주행 부활", verdict:"ongoing", desc:"웨이모 로보택시 상용화 확대, 테슬라 FSD 12버전 출시. 10년 만에 재점화되는 완전자율주행 기대.", expect:"2027년 주요 도시 무인택시 대중화", impact:"보험·운수·인프라 업계 재편 논의 본격화", stocks:["TSLA","GOOGL","UBER"], verdict_label:"진행중", invest:"자율주행 누적 투자 1천500억 달러 이상" },
+  ]},
+  { year: 2026, phase: 4, techs: [
+    { name: "미토스(Mithos)", verdict:"ongoing", desc:"AI 기반 단백질·신약 설계 플랫폼. 알파폴드 이후 AI 신약 개발 상용화 경쟁의 최전선.", expect:"AI가 임상 전 신약 후보 발굴 기간을 10년에서 1년으로 단축", impact:"제약·바이오 투자 패턴 변화, 빅파마들의 AI 스타트업 인수 가속", stocks:["NVDA","MRNA","PFE"], verdict_label:"진행중", invest:"AI 신약개발 투자 급증" },
+    { name: "터보퀀트", verdict:"ongoing", desc:"양자-AI 하이브리드 알고리즘 기반 투자 최적화 플랫폼. 금융 퀀트 전략에 양자 가속 접목.", expect:"양자 알고리즘으로 기존 대비 수백 배 빠른 포트폴리오 최적화", impact:"헤지펀드·IB의 양자 인프라 선점 경쟁 가속", stocks:["IONQ","IBM","GS"], verdict_label:"진행중", invest:"퀀트·AI 금융 투자 확대" },
+  ]},
+];
+
+const verdictClass = { bubble: 'verdict-bubble', real: 'verdict-real', ongoing: 'verdict-ongoing', mixed: 'verdict-mixed' };
+const verdictText = { bubble: '버블 판정', real: '실체 확인', ongoing: '진행중', mixed: '혼재' };
+
+let currentFilter = null;
+
+function renderTimeline(filter) {
+  const tl = document.getElementById('timeline');
+  tl.innerHTML = '';
+  
+  for (const row of data) {
+    const techs = filter ? row.techs.filter(t => row.phase === filter) : row.techs;
+    if (techs.length === 0) continue;
+    
+    const yr = document.createElement('div');
+    yr.className = 'year-row';
+    
+    const lbl = document.createElement('div');
+    lbl.className = 'year-label';
+    lbl.textContent = row.year;
+    
+    const tags = document.createElement('div');
+    tags.className = 'techs';
+    
+    for (const t of techs) {
+      const tag = document.createElement('div');
+      tag.className = `tag p${row.phase} ${t.verdict === 'bubble' ? 'bubble' : ''} ${row.year >= 2025 ? 'current' : ''}`;
+      tag.textContent = t.name;
+      tag.onclick = () => showDetail(t, row);
+      tags.appendChild(tag);
+    }
+    
+    yr.appendChild(lbl);
+    yr.appendChild(tags);
+    tl.appendChild(yr);
+    
+    if ([2017, 2020, 2023].includes(row.year)) {
+      const div = document.createElement('div');
+      div.className = 'divider';
+      tl.appendChild(div);
+    }
+  }
+}
+
+function showDetail(tech, row) {
+  const panel = document.getElementById('detail');
+  panel.className = 'detail-panel active';
+  panel.innerHTML = `
+    <div class="detail-header">
+      <div>
+        <div class="detail-title">${tech.name}</div>
+        <div class="detail-meta">${row.year}년 · ${row.phase}단계</div>
+      </div>
+      <span class="verdict-badge ${verdictClass[tech.verdict]}">${verdictText[tech.verdict]}</span>
+    </div>
+    <div class="detail-grid">
+      <div class="detail-item" style="grid-column:1/-1">
+        <label>기술 개요</label>
+        <p>${tech.desc}</p>
+      </div>
+      <div class="detail-item">
+        <label>시장의 기대</label>
+        <p>${tech.expect}</p>
+      </div>
+      <div class="detail-item">
+        <label>산업적 파급</label>
+        <p>${tech.impact}</p>
+      </div>
+      <div class="detail-item">
+        <label>주목받은 종목</label>
+        <div class="stocks">${tech.stocks.map(s=>`<span class="stock-tag">${s}</span>`).join('')}</div>
+      </div>
+      <div class="detail-item">
+        <label>투자 규모</label>
+        <p>${tech.invest}</p>
+      </div>
+    </div>
+    <button class="ask-btn" onclick="sendPrompt('${tech.name} 기술이 버블인지 실체인지 더 자세히 분석해줘')">이 기술 심층 분석 요청 ↗</button>
+  `;
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function filterPhase(p) {
+  if (currentFilter === p) {
+    currentFilter = null;
+  } else {
+    currentFilter = p;
+  }
+  renderTimeline(currentFilter);
+  document.getElementById('detail').className = 'detail-panel';
+}
+
+renderTimeline(null);
+</script>
